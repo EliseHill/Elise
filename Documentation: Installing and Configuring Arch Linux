@@ -1,0 +1,106 @@
+Documentation: Installing and Configuring Arch Linux
+1. Creating the Virtual Machine
+   1. Set Up VirtualBox:
+    - Download and install VirtualBox.
+    - Create a new virtual machine named Arch Linux.
+    - Allocate 2GB RAM and 20GB storage (later resized due to insufficient space issues).
+    - Use a dynamically allocated VDI file for the virtual hard disk.
+   Attach Arch Linux ISO:
+    - Download the Arch Linux ISO from the official website.
+    - Attach the ISO file to the virtual machine under Settings → Storage.
+2. Booting Into the Arch ISO
+  1. Start the Virtual Machine:
+    - Boot the VM with the attached Arch ISO.
+  2. Load the Live Environment:
+    - After booting, you are presented with a shell prompt in the Arch live environment.
+3. Partitioning the Disk
+    1. Launch cfdisk: "cfdisk /dev/sda" 
+    2. Create Partitions:
+      - Created a root partition (/dev/sda1).
+      - Initially created a swap partition (/dev/sda2), which was later removed to expand the root partition due to insufficient space issues.
+Error Encountered:
+  - Insufficient Disk Space: 
+    While installing the base system, received the error: "error: Partition / too full: 143755 blocks needed 63299 blocks free"
+Solution: 
+  - Booted into the ISO again and deleted the swap partition to free space
+  - Resized the root partition to utilize the full disk space
+
+4. Formatting and Mounting Partitions
+  1. Format Partitions: 
+      - For the root partitions: "mkfs.ext4 /dev/sda1"
+      - For the swap partition (before it was removed): "mkswap /dev/sda2 and swapon /dev/sda2"
+  2. Mount the Root Partition: "mount /dev/sda1 /mnt"
+
+5. Installing the Base System:
+  1. Install Base Packages: "pacstrap /mnt base linux linux-firmware"
+  2. Generate fstab: "genfstab -U /mnt >> /mnt/etc/fstab"
+  3. Chroot into the System: "arch-chroot /mnt"
+
+6. Configuring the System
+  1. Set Locale:
+    - Editied "/etc/locale.gen" to uncomment "en_US.UTF-8 UTF-8" : "nano /etc/locale.gen"
+    - Generated locales: "locale-gen"
+    - Set system language: "echo "LANG=en_US.UTF-8" > /etc/locale.conf"
+  2. Set Hostsname: "echo "archvm" > /etc/hostname"
+  3. Set Root Password: "passwd"
+7. Installing and Configuring GRUB
+  1. Install GRUB: "pacman -S grub
+grub-install --target=i386-pc /dev/sda
+grub-mkconfig -o /boot/grub/grub.cfg"
+  ERROR ENCOUNTERED:
+    - BIOS Boot Partition Missing:
+      initially encountered: "grub-install: warning: this GPT partition label contains no BIOS Boot Partition.
+grub-install: error: will not proceed with blocklists."
+  SOLUTION:
+    - Created a 2MB BIOS boot partition (type EFO2 using cfdisk)
+8. Rebooting into the installed system
+  1. Exit and Unmount: "exit
+                        umount -R /mnt
+                        reboot"
+  2. Boot into the installed Arch Linux system. 
+
+9. Encountering Errors after Reboot
+  Upon rebooting: 
+    - Soft Lockup and CPU Errors: 
+      Logs indicated high CPU utilization and system stalls: "watchdog: BUG: soft lockup - CPU#0 stuck for 30s!
+                                                              rcu_preempt detected stalls on CPUs/tasks.
+                                                              Failed to start Network Time Synchronization."
+  Possible Causes: 
+    - Insuffcient resources allocated to the VM. 
+    - Kernel misconfiguration or compatability issues. 
+
+10. Reccomendations for Fixing Errors
+  1. Verify Virtual Machine Resources:
+      - Increase allocated CPU cores (minimum 2 cores).
+      - Increase memory (recommend 4GB).
+  2. Check Kernel Logs:
+      - Boot into the Arch ISO and investigate logs: "journalctl -b"
+  3. Update System: 
+    - Ensure the latest kernel and firmware updates are installed: "pacman -Syu"
+  4. Use a Lighter Kernel:
+    - If the default kernel causes issues, consider switching to the LTS kernel: "pacman -S linux-lts"
+SUMARRY
+  Despite encountering several errors during installation, progress was made through:
+  - Adjusting partition sizes
+  - Reinstalling GRUB with a BIOS boot partition. 
+  - Investing system logs for potential kernel-related issues
+
+  
+
+
+
+    
+
+  
+
+
+ 
+
+  
+
+
+
+  
+
+
+
